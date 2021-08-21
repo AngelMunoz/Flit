@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Types.fs" />
+    <Compile Include="Extensions.fs" />
+    <Compile Include="Components/Navbar.fs" />
+    <Compile Include="Pages/Home.fs" />
+    <Compile Include="Pages/Notes.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 

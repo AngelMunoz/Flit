@@ -1,56 +1,59 @@
 ﻿module Main
 
+open Browser.Types
 open Elmish
 open Elmish.Lit
-
 open Lit
 
-type State = { counter: int; name: string }
+open Types
+open Components
+open Pages
+
+type State = { NavStack: Page list }
 
 type Msg =
-    | Increment
-    | Decrement
-    | Reset
+    | GoTo of Page
+    | GoBack
 
-let private init _ = { counter = 0; name = "World" }
+let private init _ = { NavStack = [ Home ] }
 
 let private update msg state =
     match msg with
-    | Increment ->
+    | GoTo page ->
         { state with
-              counter = state.counter + 1 }
-    | Decrement ->
-        { state with
-              counter = state.counter - 1 }
-    | Reset -> init state
+              NavStack = page :: state.NavStack }
+    | GoBack ->
+        if state.NavStack.Length > 1 then
+            { state with
+                  NavStack = state.NavStack.Tail }
+        else
+            state
 
 
-let private counter
-    (props: {| counter: int
-               decrement: unit -> unit
-               reset: unit -> unit
-               increment: unit -> unit |})
-    =
-    html
-        $"""
-        <button @click={fun _ -> props.decrement ()}>-</button>
-        <button @click={fun _ -> props.reset ()}>Reset</button>
-        <button @click={fun _ -> props.increment ()}>+</button>
-        <div>{props.counter}</div>
-        """
+let private getPage state =
+    Fable.Core.JS.setTimeout
+        (fun _ ->
+            match state.NavStack |> List.tryHead with
+            | Some Home -> Home.Page()
+            | Some Notes -> Notes.Page()
+            | None -> Home.Page())
+        0
+
+let private onGoTo dispatch (evt: CustomEvent<Page>) =
+    match evt.detail with
+    | Some page -> GoTo page |> dispatch
+    | None -> ()
 
 let view state dispatch =
-    let counterEl =
-        counter
-            {| counter = state.counter
-               decrement = fun _ -> dispatch Decrement
-               increment = fun _ -> dispatch Increment
-               reset = fun _ -> dispatch Reset |}
 
     html
         $"""
-        <div>Hello {state.name}!</div>
-        {counterEl}
+        <article
+            @on-back-requested="{fun _ -> dispatch GoBack}"
+            @on-go-to="{onGoTo dispatch}">
+            {Navbar.View()}
+            <main id="content">{getPage state}</main>
+        </article>
         """
 
 
