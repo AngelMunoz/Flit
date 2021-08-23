@@ -10,6 +10,7 @@
     <Compile Include="Components/Navbar.fs" />
     <Compile Include="Pages/Home.fs" />
     <Compile Include="Pages/Notes.fs" />
+    <Compile Include="App.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 
