@@ -1,8 +1,6 @@
 [<RequireQualifiedAccess>]
 module Pages.Notes
 
-open Elmish
-open Elmish.Lit
 open Browser.Types
 open Lit
 open Fable.Haunted

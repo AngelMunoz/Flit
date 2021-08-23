@@ -24,7 +24,8 @@ let private app () =
         $"""
         <article>
             {Navbar.View onBackRequested goToPage}
-            <main id="content">{getPage page}</main>
+            <main>{getPage page}</main>
+            <flit-using-engine></flit-using-engine>
         </article>
         """
 
