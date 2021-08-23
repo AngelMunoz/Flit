@@ -1,62 +1,36 @@
 ﻿module Main
 
 open Browser.Types
-open Elmish
-open Elmish.Lit
+
 open Lit
+
+open Fable.Haunted
 
 open Types
 open Components
 open Pages
 
-type State = { NavStack: Page list }
+Home.register ()
+Notes.register ()
 
-type Msg =
-    | GoTo of Page
-    | GoBack
+let App () =
+    let page, setPage = Haunted.useState (Page.Home)
 
-let private init _ = { NavStack = [ Home ] }
+    let onBackRequested _ = printfn "Back requested"
 
-let private update msg state =
-    match msg with
-    | GoTo page ->
-        { state with
-              NavStack = page :: state.NavStack }
-    | GoBack ->
-        if state.NavStack.Length > 1 then
-            { state with
-                  NavStack = state.NavStack.Tail }
-        else
-            state
+    let goToPage page _ = setPage page
 
-
-let private getPage state =
-    Fable.Core.JS.setTimeout
-        (fun _ ->
-            match state.NavStack |> List.tryHead with
-            | Some Home -> Home.Page()
-            | Some Notes -> Notes.Page()
-            | None -> Home.Page())
-        0
-
-let private onGoTo dispatch (evt: CustomEvent<Page>) =
-    match evt.detail with
-    | Some page -> GoTo page |> dispatch
-    | None -> ()
-
-let view state dispatch =
+    let getPage page =
+        match page with
+        | Page.Home -> html $"""<flit-home></flit-home>"""
+        | Page.Notes -> html $"""<flit-notes></flit-notes>"""
 
     html
         $"""
-        <article
-            @on-back-requested="{fun _ -> dispatch GoBack}"
-            @on-go-to="{onGoTo dispatch}">
-            {Navbar.View()}
-            <main id="content">{getPage state}</main>
+        <article>
+            {Navbar.View onBackRequested goToPage}
+            <main id="content">{getPage page}</main>
         </article>
         """
 
-
-Program.mkSimple init update view
-|> Program.withLit "fable-lit"
-|> Program.run
+defineComponent "flit-app" (Haunted.Component App)

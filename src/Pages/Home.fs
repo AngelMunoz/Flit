@@ -1,36 +1,21 @@
+[<RequireQualifiedAccess>]
 module Pages.Home
 
-open Elmish
-open Elmish.Lit
 open Lit
-
-type private State = { counter: int }
-
-type private Msg =
-    | Increment
-    | Decrement
-
-let private init _ = { counter = 0 }
-
-let private update msg state =
-    match msg with
-    | Increment ->
-        { state with
-              counter = state.counter + 1 }
-    | Decrement ->
-        { state with
-              counter = state.counter - 1 }
+open Fable.Haunted
 
 
-let private view state dispatch =
+let private counter (props: {| initial: int option |}) =
+    let count, setCount =
+        Haunted.useState (props.initial |> Option.defaultValue 0)
+
     html
         $"""
-        <p>Home: {state.counter}</p>
-        <button @click={fun _ -> dispatch Increment}>Increment</button>
-        <button @click={fun _ -> dispatch Decrement}>Decrement</button>
+        <p>Home: {count}</p>
+        <button @click={fun _ -> setCount (count + 1)}>Increment</button>
+        <button @click={fun _ -> setCount (count - 1)}>Decrement</button>
+        <button @click={fun _ -> setCount (0)}>Reset</button>
         """
 
-let Page () =
-    Program.mkSimple init update view
-    |> Program.withLit "content"
-    |> Program.run
+let register () =
+    defineComponent "flit-home" (Haunted.Component counter)

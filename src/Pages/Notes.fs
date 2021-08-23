@@ -1,9 +1,13 @@
+[<RequireQualifiedAccess>]
 module Pages.Notes
 
 open Elmish
 open Elmish.Lit
 open Browser.Types
 open Lit
+open Fable.Haunted
+
+
 
 type private Note =
     { Id: int
@@ -15,61 +19,61 @@ type private State =
       Notes: Note list }
 
 type private Msg =
-    | Add of Note
+    | Save
     | Remove of Note
     | SetTitle of string
     | SetBody of string
-    | Save
 
-let private init _ =
-    { CurrentNote = None; Notes = [] }, Cmd.none
-
-let private update msg state =
+let private update state msg =
     match msg with
-    | Add note ->
-        { state with
-              Notes =
-                  { note with
-                        Id = state.Notes.Length + 1 }
-                  :: state.Notes },
-        Cmd.none
-    | Remove note ->
-        { state with
-              Notes = state.Notes |> List.filter (fun n -> n <> note) },
-        Cmd.none
-    | SetTitle title ->
-        let current =
-            state.CurrentNote
-            |> Option.map (fun current -> { current with Title = title })
-            |> Option.orElse (Some { Id = 0; Title = ""; Body = "" })
-
-        { state with CurrentNote = current }, Cmd.none
-    | SetBody title ->
-        let current =
-            state.CurrentNote
-            |> Option.map (fun current -> { current with Title = title })
-            |> Option.orElse (Some { Id = 0; Title = ""; Body = "" })
-
-        { state with CurrentNote = current }, Cmd.none
     | Save ->
         match state.CurrentNote
               |> Option.map
                   (fun note ->
                       { note with
                             Id = (state.Notes |> Seq.length) + 1 }) with
-        | Some note -> state, Cmd.ofMsg (Add note)
-        | None -> state, Cmd.none
+        | Some note ->
+            { state with
+                  Notes =
+                      { note with
+                            Id = state.Notes.Length + 1 }
+                      :: state.Notes }
+        | None -> state
+
+    | Remove note ->
+        { state with
+              Notes = state.Notes |> List.filter (fun n -> n <> note) }
+    | SetTitle title ->
+        let current =
+            state.CurrentNote
+            |> Option.map (fun current -> { current with Title = title })
+            |> Option.orElse (Some { Id = 0; Title = ""; Body = "" })
+
+        { state with CurrentNote = current }
+    | SetBody body ->
+        let current =
+            state.CurrentNote
+            |> Option.map (fun current -> { current with Body = body })
+            |> Option.orElse (Some { Id = 0; Title = ""; Body = "" })
+
+        { state with CurrentNote = current }
 
 
 
 
-let private noteTemplate note index =
+let private noteTemplate note =
     html
         $"""
         <li>{note.Id} - {note.Title}</li>
     """
 
-let private view state dispatch =
+let private view () =
+
+    let (state, dispatch) =
+        Haunted.useReducer (update, { CurrentNote = None; Notes = [] })
+
+    let notes = state.Notes |> List.map noteTemplate
+
     html
         $"""
         <form @submit="{fun (ev: Event) ->
@@ -91,12 +95,8 @@ let private view state dispatch =
                              |> dispatch}" />
             <button type="submit">Add</button>
         </form>
-        <ul>{repeat state.Notes noteTemplate}</ul>
+        <ul>{notes}</ul>
         """
 
-
-let Page () =
-
-    Program.mkProgram init update view
-    |> Program.withLit "content"
-    |> Program.run
+let register () =
+    defineComponent "flit-notes" (Haunted.Component view)

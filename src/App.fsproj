@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Compile Include="Types.fs" />
-    <Compile Include="Extensions.fs" />
     <Compile Include="Components/Navbar.fs" />
     <Compile Include="Pages/Home.fs" />
     <Compile Include="Pages/Notes.fs" />
@@ -16,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Elmish.Lit" Version="1.0.0-beta-001" />
+    <PackageReference Include="Fable.Haunted" Version="1.0.0-beta-003" />
   </ItemGroup>
 
 </Project>

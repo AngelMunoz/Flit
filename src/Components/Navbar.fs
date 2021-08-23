@@ -3,32 +3,16 @@ module Components.Navbar
 open Browser.Types
 open Fable.Core
 open Lit
+open Fable.Haunted
 open Types
-open Extensions
-
-let View () =
-    let onBackRequested (event: PointerEvent) =
-        let evt =
-            createEvent "on-back-requested" {| bubbles = true; cancelable = true |}
-
-        event.target.dispatchEvent evt |> ignore
-
-    let goToPage (page: Page) (event: PointerEvent) =
-        let evt =
-            createCustomEvent
-                "on-go-to"
-                {| bubbles = true
-                   cancelable = true
-                   detail = page |}
-
-        event.target.dispatchEvent evt |> ignore
 
 
+let View (onBackRequested: _ -> unit) (goToPage: Page -> _ -> unit) =
     html
         $"""
-        <nav>
-            <button @click="{onBackRequested}">Go Back</button>
-            <button @click="{goToPage Home}">Home</button>
-            <button @click="{goToPage Notes}">notes</button>
+        <nav role="navigation">
+            <button @click={onBackRequested}>Back</button>
+            <button @click={goToPage Page.Home}>Home</button>
+            <button @click={goToPage Page.Notes}>Notes</button>
         </nav>
         """
